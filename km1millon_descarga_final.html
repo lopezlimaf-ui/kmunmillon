@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KM Un Millón</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f0;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem;gap:1.5rem;min-height:100vh;}
+.phone-frame{width:320px;background:#fff;border:1.5px solid #bbb;border-radius:32px;overflow:hidden;min-height:600px;}
+.status-bar{background:#B51E1E;height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;}
+.status-bar span{color:#fff;font-size:11px;font-weight:500;}
+.screen{display:none;min-height:564px;flex-direction:column;}
+.screen.active{display:flex;}
+.nav-tabs{display:flex;gap:6px;background:#e8e8e4;border:0.5px solid #ccc;border-radius:12px;padding:4px;flex-wrap:wrap;justify-content:center;}
+.nav-tab{padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;border:none;background:transparent;color:#666;}
+.nav-tab.active{background:#fff;color:#111;border:0.5px solid #bbb;font-weight:500;}
+.fi{width:100%;padding:9px 12px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;background:#fff;color:#111;outline:none;}
+.fi:focus{border-color:#B51E1E;}
+.fl{font-size:12px;color:#666;margin-bottom:4px;}
+.btn-red{background:#B51E1E;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;width:100%;}
+.btn-out{background:transparent;color:#B51E1E;border:1px solid #B51E1E;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;width:100%;}
+.btn-ghost{background:none;border:none;color:#B51E1E;font-size:12px;cursor:pointer;margin-top:4px;}
+.frow{display:flex;gap:8px;}
+.frow>div{flex:1;}
+.splash{background:#B51E1E;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:2rem;}
+.splash-logo{width:72px;height:72px;background:#fff;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#B51E1E;text-align:center;line-height:1.2;padding:6px;}
+.splash h1{color:#fff;font-size:22px;font-weight:700;text-align:center;}
+.splash p{color:rgba(255,255,255,0.75);font-size:13px;text-align:center;line-height:1.5;}
+.splash-sub{color:rgba(255,255,255,0.6);font-size:12px;}
+.form-wrap{padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:12px;flex:1;}
+.step-bar{display:flex;gap:4px;}
+.step-dot{height:3px;border-radius:2px;flex:1;background:#ddd;}
+.step-dot.done{background:#B51E1E;}
+.form-title{font-size:18px;font-weight:700;color:#111;}
+.form-sub{font-size:12px;color:#777;margin-top:2px;}
+.err-box{background:#FCEBEB;border:0.5px solid #F09595;border-radius:8px;padding:8px 12px;font-size:12px;color:#A32D2D;display:none;}
+.opt-btn{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:13px;color:#111;cursor:pointer;text-align:left;transition:all 0.15s;}
+.opt-btn.selected{border-color:#B51E1E;background:#FCEBEB;color:#B51E1E;font-weight:600;}
+.dash-hdr{background:#B51E1E;padding:1.25rem 1.25rem 1rem;flex-shrink:0;}
+.dash-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.dash-body{flex:1;overflow-y:auto;padding-bottom:1rem;}
+.hcard{margin:1rem 1.25rem 0;background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:1rem 1.25rem;}
+.hrow{display:flex;justify-content:space-between;align-items:center;}
+.hbar-wrap{width:80px;height:4px;background:#eee;border-radius:2px;}
+.hbar{height:4px;border-radius:2px;}
+.sec-label{font-size:11px;font-weight:600;color:#999;padding:1rem 1.25rem 0.5rem;text-transform:uppercase;letter-spacing:0.5px;}
+.rlist{padding:0 1.25rem;display:flex;flex-direction:column;gap:8px;}
+.rcard{background:#fff;border:0.5px solid #ddd;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.rico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.badge{font-size:10px;font-weight:600;padding:3px 7px;border-radius:6px;}
+.clim{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:8px;padding:8px 12px;margin:8px 1.25rem 0;display:flex;gap:8px;align-items:flex-start;}
+.warn-banner{background:#FCEBEB;border:0.5px solid #F09595;border-radius:8px;padding:8px 12px;margin:8px 1.25rem 0;display:flex;gap:8px;align-items:flex-start;}
+.chk-hdr{background:#B51E1E;padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.back-btn{color:#fff;font-size:22px;cursor:pointer;background:none;border:none;padding:0;line-height:1;}
+.chk-body{padding:0.75rem 1.25rem;flex:1;overflow-y:auto;}
+.chk-sec{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin:0.75rem 0 6px;}
+.chk-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid #eee;cursor:pointer;}
+.chk-item:last-child{border-bottom:none;}
+.chk-box{width:18px;height:18px;border-radius:4px;flex-shrink:0;margin-top:1px;border:1.5px solid #ccc;background:transparent;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.chk-box.checked{background:#B51E1E;border-color:#B51E1E;}
+.chk-box.checked::after{content:'✓';color:#fff;font-size:10px;}
+.chk-foot{padding:1rem 1.25rem;border-top:0.5px solid #eee;flex-shrink:0;}
+.prog-wrap{width:100%;height:5px;background:#eee;border-radius:3px;margin-top:6px;}
+.prog-fill{height:5px;border-radius:3px;background:#B51E1E;transition:width 0.3s;}
+.plan-card{background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:1rem 1.25rem;}
+.plan-card.feat{border:2px solid #B51E1E;position:relative;}
+.pop-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#B51E1E;color:#fff;font-size:10px;font-weight:600;padding:3px 12px;border-radius:20px;white-space:nowrap;}
+.soon{background:#f4f4f0;border-radius:8px;padding:10px 12px;font-size:12px;color:#777;text-align:center;margin-top:8px;}
+.sw{width:40px;height:22px;border-radius:11px;position:relative;cursor:pointer;transition:background 0.2s;}
+.sw .th{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;transition:all 0.2s;}
+.avatar{width:48px;height:48px;border-radius:50%;background:#FCEBEB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#B51E1E;}
+</style>
+</head>
+<body>
+
+<div class="nav-tabs" id="nav-tabs" style="display:none;">
+  <button class="nav-tab" onclick="go('dashboard')">Inicio</button>
+  <button class="nav-tab" onclick="go('checklist')">Checklist</button>
+  <button class="nav-tab" onclick="go('historial')">Historial</button>
+  <button class="nav-tab" onclick="go('planes')">Planes</button>
+  <button class="nav-tab" onclick="go('config')">Config</button>
+</div>
+
+<div class="phone-frame">
+  <div class="status-bar"><span id="clock">9:41</span><span>●●●</span></div>
+
+  <div class="screen active" id="screen-splash">
+    <div class="splash">
+      <div class="splash-logo">KM<br>1,000,000</div>
+      <h1>KM Un Millón</h1>
+      <p>Metodología japonesa para llevar tu auto a 400,000 km y más.</p>
+      <button class="btn-red" style="margin-top:1.5rem;background:#fff;color:#B51E1E;" onclick="go('login')">Iniciar sesión</button>
+      <button class="btn-red" style="margin-top:8px;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);" onclick="go('reg1')">Crear cuenta gratis →</button>
+      <span class="splash-sub" style="margin-top:8px;">30 días gratis · Sin tarjeta requerida</span>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-login">
+    <div class="form-wrap">
+      <div style="width:40px;height:40px;background:#FCEBEB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#B51E1E;">KM</div>
+      <div><div class="form-title">Bienvenido de vuelta</div><div class="form-sub">Ingresa a tu cuenta</div></div>
+      <div id="login-err" class="err-box">Correo o contraseña incorrectos</div>
+      <div><div class="fl">Correo</div><input class="fi" type="email" id="l-email" placeholder="tu@correo.com"/></div>
+      <div><div class="fl">Contraseña</div><input class="fi" type="password" id="l-pass" placeholder="••••••••"/></div>
+      <button class="btn-red" onclick="doLogin()">Entrar →</button>
+      <button class="btn-out" style="margin-top:4px;" onclick="go('reg1')">Crear cuenta gratis</button>
+      <button class="btn-ghost" onclick="go('splash')">← Regresar</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-reg1">
+    <div class="form-wrap">
+      <div class="step-bar"><div class="step-dot done"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+      <div><div class="form-title">Crea tu cuenta</div><div class="form-sub">Paso 1 de 4 — datos personales</div></div>
+      <div id="reg-err" class="err-box">Por favor completa todos los campos</div>
+      <div><div class="fl">Nombre</div><input class="fi" type="text" id="r-nombre" placeholder="Tu nombre"/></div>
+      <div><div class="fl">Correo</div><input class="fi" type="email" id="r-email" placeholder="tu@correo.com"/></div>
+      <div><div class="fl">Contraseña</div><input class="fi" type="password" id="r-pass" placeholder="Mínimo 6 caracteres"/></div>
+      <div><div class="fl">Ciudad</div>
+        <select class="fi" id="r-ciudad">
+          <option value="">Selecciona tu ciudad</option>
+          <option value="mexicali">Mexicali, BC</option>
+          <option value="tijuana">Tijuana, BC</option>
+          <option value="otra">Otra ciudad</option>
+        </select>
+      </div>
+      <button class="btn-red" style="margin-top:auto;" onclick="doReg1()">Siguiente →</button>
+      <button class="btn-ghost" onclick="go('splash')">← Regresar</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-reg2">
+    <div class="form-wrap">
+      <div class="step-bar"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+      <div><div class="form-title">Tu automóvil</div><div class="form-sub">Paso 2 de 4 — datos del vehículo</div></div>
+      <div><div class="fl">Marca</div>
+        <select class="fi" id="a-marca">
+          <option value="">Selecciona marca</option>
+          <option>Toyota</option><option>Kia</option><option>Nissan</option>
+          <option>Chevrolet</option><option>Honda</option><option>Volkswagen</option>
+          <option>Hyundai</option><option>Ford</option><option>Otra</option>
+        </select>
+      </div>
+      <div><div class="fl">Modelo</div><input class="fi" type="text" id="a-modelo" placeholder="Forte, Corolla, Versa..."/></div>
+      <div class="frow">
+        <div><div class="fl">Año</div><input class="fi" type="text" inputmode="numeric" id="a-anio" placeholder="2022"/></div>
+        <div><div class="fl">Combustible</div>
+          <select class="fi" id="a-comb"><option value="gasolina">Gasolina</option><option value="diesel">Diesel</option></select>
+        </div>
+      </div>
+      <div><div class="fl">Transmisión</div>
+        <select class="fi" id="a-trans"><option value="automatica">Automática</option><option value="manual">Manual</option></select>
+      </div>
+      <div><div class="fl">Tracción</div>
+        <select class="fi" id="a-trac">
+          <option value="fwd">FWD — Delantera (más común)</option>
+          <option value="rwd">RWD — Trasera</option>
+          <option value="awd">AWD / 4x4</option>
+        </select>
+      </div>
+      <div><div class="fl">Kilometraje actual</div><input class="fi" type="text" inputmode="numeric" id="a-km" placeholder="60000"/></div>
+      <div><div class="fl">Km por mes (aprox)</div><input class="fi" type="text" inputmode="numeric" id="a-kmmes" placeholder="1300"/></div>
+      <button class="btn-red" style="margin-top:auto;" onclick="doReg2()">Siguiente →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-reg3">
+    <div class="form-wrap">
+      <div class="step-bar"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot"></div></div>
+      <div><div class="form-title">Estado del mantenimiento</div><div class="form-sub">Paso 3 de 4</div></div>
+      <p style="font-size:13px;color:#555;line-height:1.5;">¿Tu automóvil tiene el mantenimiento al corriente?</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+        <button class="opt-btn" id="opt-si" onclick="selOpt('si')">✅ Sí, está al corriente</button>
+        <button class="opt-btn" id="opt-no" onclick="selOpt('no')">⚠️ No, tiene servicios atrasados</button>
+      </div>
+      <div id="mant-info" style="display:none;background:#FAEEDA;border:0.5px solid #FAC775;border-radius:8px;padding:10px 12px;font-size:12px;color:#6B3F00;line-height:1.5;">
+        No hay problema — te generaremos un checklist de puesta al corriente para que puedas ponerte al día paso a paso.
+      </div>
+      <button class="btn-red" style="margin-top:auto;" onclick="doReg3()">Siguiente →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-reg4">
+    <div class="form-wrap">
+      <div class="step-bar"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div></div>
+      <div><div class="form-title">Notificaciones</div><div class="form-sub">Paso 4 de 4</div></div>
+      <p style="font-size:13px;color:#555;line-height:1.5;">Activa las notificaciones para recibir recordatorios antes de cada servicio.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#111;">Alertas de mantenimiento</span><div class="sw" style="background:#B51E1E;" onclick="toggleSw(this)"><div class="th" style="right:2px;"></div></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#111;">Consejo japonés del día</span><div class="sw" style="background:#B51E1E;" onclick="toggleSw(this)"><div class="th" style="right:2px;"></div></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#111;">Alerta clima extremo</span><div class="sw" style="background:#B51E1E;" onclick="toggleSw(this)"><div class="th" style="right:2px;"></div></div></div>
+      </div>
+      <button class="btn-red" style="margin-top:auto;" onclick="doReg4()">Comenzar mi plan →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-dashboard">
+    <div class="dash-hdr">
+      <div class="dash-top">
+        <div>
+          <div style="color:rgba(255,255,255,0.8);font-size:12px;" id="d-saludo">Buen día</div>
+          <div style="color:#fff;font-size:16px;font-weight:700;margin-top:2px;" id="d-car">—</div>
+          <div style="color:rgba(255,255,255,0.85);font-size:12px;margin-top:2px;" id="d-km">—</div>
+        </div>
+        <div style="width:30px;height:30px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;" onclick="go('checklist')">🔔</div>
+      </div>
+    </div>
+    <div class="dash-body">
+      <div class="hcard">
+        <div style="font-size:12px;color:#777;margin-bottom:8px;">Salud del vehículo</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <svg width="52" height="52" viewBox="0 0 52 52">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="#eee" stroke-width="4"/>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="#B51E1E" stroke-width="4" stroke-dasharray="124" stroke-dashoffset="31" stroke-linecap="round" transform="rotate(-90 26 26)"/>
+            <text x="26" y="30" text-anchor="middle" font-size="13" font-weight="600" fill="#B51E1E">75%</text>
+          </svg>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+            <div class="hrow"><span style="font-size:12px;color:#666;">Motor</span><div class="hbar-wrap"><div class="hbar" style="width:40%;background:#E24B4A;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Frenos</span><div class="hbar-wrap"><div class="hbar" style="width:75%;background:#BA7517;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Llantas</span><div class="hbar-wrap"><div class="hbar" style="width:65%;background:#BA7517;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Batería</span><div class="hbar-wrap"><div class="hbar" style="width:85%;background:#639922;"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="clim" id="clima-banner" style="display:none;">
+        <span style="font-size:14px;">🌡️</span>
+        <span style="font-size:11px;color:#854F0B;line-height:1.4;"><strong>Clima extremo detectado</strong> — Revisa refrigerante y batería con más frecuencia.</span>
+      </div>
+      <div class="warn-banner" id="mant-banner" style="display:none;">
+        <span style="font-size:14px;">⚠️</span>
+        <span style="font-size:11px;color:#A32D2D;line-height:1.4;"><strong>Mantenimiento atrasado</strong> — Tu checklist incluye una puesta al corriente. Realízala pronto.</span>
+      </div>
+      <div class="sec-label">Próximo servicio</div>
+      <div class="rlist" id="rlist"></div>
+      <div style="padding:8px 1.25rem;">
+        <button class="btn-out" onclick="toggleReg()">+ Registrar servicio realizado hoy</button>
+      </div>
+      <div id="panel-reg" style="display:none;margin:0 1.25rem;background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:1rem 1.25rem;">
+        <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:10px;">¿Qué servicio realizaste hoy?</div>
+        <div style="display:flex;flex-direction:column;gap:6px;" id="srv-rapidos"></div>
+        <div style="margin-top:10px;"><div class="fl">O escribe el servicio</div><input class="fi" type="text" id="srv-manual" placeholder="Ej: Cambio de aceite y filtro"/></div>
+        <div style="margin-top:8px;"><div class="fl">Kilometraje al realizar el servicio</div><input class="fi" type="text" inputmode="numeric" id="srv-km"/></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button onclick="guardarSrv()" style="flex:1;background:#B51E1E;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;">Guardar ✓</button>
+          <button onclick="toggleReg()" style="flex:1;background:transparent;color:#666;border:0.5px solid #ccc;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;">Cancelar</button>
+        </div>
+      </div>
+      <div style="padding:1rem 1.25rem;">
+        <div style="border:0.5px solid #ddd;border-radius:12px;padding:1rem 1.25rem;">
+          <div style="font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Consejo japonés del día</div>
+          <div style="font-size:13px;color:#333;line-height:1.5;" id="consejo"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-checklist">
+    <div class="chk-hdr">
+      <button class="back-btn" onclick="go('dashboard')">‹</button>
+      <div><div style="color:#fff;font-size:16px;font-weight:700;" id="chk-title">Servicio</div><div style="color:rgba(255,255,255,0.7);font-size:11px;" id="chk-sub">Metodología japonesa</div></div>
+    </div>
+    <div class="chk-body" id="chk-body"></div>
+    <div class="chk-foot">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#777;margin-bottom:4px;"><span id="prog-txt">0 completados</span><span id="prog-pct">0%</span></div>
+      <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%;"></div></div>
+      <button class="btn-red" style="margin-top:10px;" onclick="completar()">Marcar servicio como completado ✓</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-historial">
+    <div class="chk-hdr">
+      <button class="back-btn" onclick="go('dashboard')">‹</button>
+      <div><div style="color:#fff;font-size:16px;font-weight:700;">Historial</div><div style="color:rgba(255,255,255,0.7);font-size:11px;" id="hist-sub">Tu vehículo</div></div>
+    </div>
+    <div style="padding:1.25rem;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;" id="hist-body"></div>
+  </div>
+
+  <div class="screen" id="screen-planes">
+    <div style="background:#B51E1E;padding:1.25rem;flex-shrink:0;">
+      <div style="color:rgba(255,255,255,0.8);font-size:12px;">Tu periodo gratuito</div>
+      <div style="color:#fff;font-size:22px;font-weight:700;">30 días</div>
+      <div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:2px;">Elige tu plan cuando estés listo</div>
+    </div>
+    <div style="padding:1.25rem;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;">
+      <div class="plan-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:14px;font-weight:600;color:#111;">Mensual</div><div style="font-size:12px;color:#666;margin-top:2px;">Cancela cuando quieras</div></div><div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:#111;">$20</div><div style="font-size:11px;color:#999;">MXN / mes</div></div></div>
+        <div class="soon">Próximamente — acceso gratis por 30 días</div>
+      </div>
+      <div class="plan-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:14px;font-weight:600;color:#111;">Trimestral</span><span style="background:#FAEEDA;color:#854F0B;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;">Ahorra $10</span></div><div style="font-size:12px;color:#666;margin-top:2px;">3 meses · $16.67/mes</div></div><div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:#111;">$50</div><div style="font-size:11px;color:#999;">MXN / 3 meses</div></div></div>
+        <div class="soon">Próximamente — acceso gratis por 30 días</div>
+      </div>
+      <div class="plan-card feat">
+        <div class="pop-badge">MÁS POPULAR</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:14px;font-weight:600;color:#111;">Anual</span><span style="background:#FCEBEB;color:#A32D2D;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;">3 meses gratis</span></div><div style="font-size:12px;color:#666;margin-top:2px;">12 meses · $15/mes</div></div><div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:#B51E1E;">$180</div><div style="font-size:11px;color:#999;">MXN / año</div></div></div>
+        <div class="soon">Próximamente — acceso gratis por 30 días</div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:#aaa;">Pago seguro · Cancela en cualquier momento</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-config">
+    <div class="chk-hdr">
+      <button class="back-btn" onclick="go('dashboard')">‹</button>
+      <div><div style="color:#fff;font-size:16px;font-weight:700;">Configuración</div><div style="color:rgba(255,255,255,0.7);font-size:11px;">Perfil y vehículo</div></div>
+    </div>
+    <div style="padding:1.25rem;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:0.5px solid #eee;">
+        <div class="avatar" id="cfg-av">P</div>
+        <div><div style="font-size:15px;font-weight:600;color:#111;" id="cfg-nom">—</div><div style="font-size:12px;color:#B51E1E;">30 días gratis · activo</div></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Datos del vehículo</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div><div class="fl">Marca y modelo</div><div class="frow"><input class="fi" type="text" id="c-marca" style="flex:1;"/><input class="fi" type="text" id="c-modelo" style="flex:1;"/></div></div>
+          <div><div class="fl">Año</div><input class="fi" type="text" id="c-anio"/></div>
+          <div><div class="fl">Combustible</div><select class="fi" id="c-comb"><option value="gasolina">Gasolina</option><option value="diesel">Diesel</option></select></div>
+          <div><div class="fl">Transmisión</div><select class="fi" id="c-trans"><option value="automatica">Automática</option><option value="manual">Manual</option></select></div>
+          <div><div class="fl">Tracción</div><select class="fi" id="c-trac"><option value="fwd">FWD — Delantera</option><option value="rwd">RWD — Trasera</option><option value="awd">AWD / 4x4</option></select></div>
+          <div><div class="fl">Kilometraje actual</div><input class="fi" type="text" inputmode="numeric" id="c-km"/></div>
+          <div><div class="fl">Km por mes</div><input class="fi" type="text" inputmode="numeric" id="c-kmmes"/></div>
+          <div><div class="fl">Ciudad</div><input class="fi" type="text" id="c-ciudad"/></div>
+        </div>
+      </div>
+      <div style="border-top:0.5px solid #eee;padding-top:12px;">
+        <div style="font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Notificaciones</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#111;">Alertas de mantenimiento</span><div class="sw" style="background:#B51E1E;" onclick="toggleSw(this)"><div class="th" style="right:2px;"></div></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#111;">Consejo japonés del día</span><div class="sw" style="background:#B51E1E;" onclick="toggleSw(this)"><div class="th" style="right:2px;"></div></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#111;">Alerta clima extremo</span><div class="sw" style="background:#B51E1E;" onclick="toggleSw(this)"><div class="th" style="right:2px;"></div></div></div>
+        </div>
+      </div>
+      <button class="btn-red" onclick="guardarCfg()">Guardar cambios</button>
+      <button style="background:none;border:none;color:#999;font-size:12px;cursor:pointer;text-align:center;" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var U=null,V=null,H=[];
+var mantOk=true;
+var consejos=["No bajes el tanque por debajo de ¼. La bomba usa la gasolina para enfriarse.","Espera 10 segundos antes de arrancar y conduce suave los primeros 5 km.","Revisa el nivel de aceite cada 2 semanas con el motor frío.","En verano estaciona a la sombra — el calor sube la temperatura del aceite.","Evita acelerones y frenadas bruscas. El motor japonés vive de la suavidad.","Llena el filtro de aceite antes de instalarlo — el motor no arranca en seco.","Un termostato defectuoso sobrecalienta el motor silenciosamente.","Las bandas se endurecen con el calor extremo. Revísalas cada 10,000 km."];
+
+function tick(){var n=new Date();document.getElementById('clock').textContent=n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes();}
+tick();setInterval(tick,30000);
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  var tabs=['dashboard','checklist','historial','planes','config'];
+  var idx=tabs.indexOf(name);
+  if(idx>=0)document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  var noNav=['splash','login','reg1','reg2','reg3','reg4'];
+  document.getElementById('nav-tabs').style.display=noNav.indexOf(name)>=0?'none':'flex';
+  if(name==='dashboard'){renderDash();checkNotif();}
+  if(name==='checklist')renderChk();
+  if(name==='historial')renderHist();
+  if(name==='config')renderCfg();
+}
+
+function doLogin(){
+  var email=document.getElementById('l-email').value.trim();
+  var pass=document.getElementById('l-pass').value;
+  var s=JSON.parse(localStorage.getItem('km1m')||'null');
+  if(s&&s.email===email&&s.pass===pass){
+    U=s;V=s.v;H=s.h||[];mantOk=s.mantOk!==false;
+    document.getElementById('login-err').style.display='none';
+    go('config');
+  }else{document.getElementById('login-err').style.display='block';}
+}
+
+function doReg1(){
+  var n=document.getElementById('r-nombre').value.trim();
+  var e=document.getElementById('r-email').value.trim();
+  var p=document.getElementById('r-pass').value;
+  var c=document.getElementById('r-ciudad').value;
+  if(!n||!e||p.length<6||!c){document.getElementById('reg-err').style.display='block';return;}
+  document.getElementById('reg-err').style.display='none';
+  U={nombre:n,email:e,pass:p,ciudad:c};
+  go('reg2');
+}
+
+function doReg2(){
+  var marca=document.getElementById('a-marca').value.trim();
+  var modelo=document.getElementById('a-modelo').value.trim();
+  var anio=document.getElementById('a-anio').value.trim();
+  var comb=document.getElementById('a-comb').value;
+  var trans=document.getElementById('a-trans').value;
+  var trac=document.getElementById('a-trac').value;
+  var km=parseInt(document.getElementById('a-km').value);
+  var kmmes=parseInt(document.getElementById('a-kmmes').value);
+  if(!marca||!modelo||!anio||isNaN(km)||isNaN(kmmes)){alert('Por favor completa todos los campos');return;}
+  V={marca:marca,modelo:modelo,anio:anio,comb:comb,trans:trans,trac:trac,km:km,kmmes:kmmes};
+  go('reg3');
+}
+
+function selOpt(val){
+  mantOk=val==='si';
+  document.getElementById('opt-si').classList.toggle('selected',val==='si');
+  document.getElementById('opt-no').classList.toggle('selected',val==='no');
+  document.getElementById('mant-info').style.display=val==='no'?'block':'none';
+}
+
+function doReg3(){go('reg4');}
+
+function doReg4(){
+  H=[];
+  localStorage.setItem('km1m',JSON.stringify({nombre:U.nombre,email:U.email,pass:U.pass,ciudad:U.ciudad,v:V,h:H,mantOk:mantOk}));
+  go('config');
+}
+
+function cerrarSesion(){U=null;V=null;H=[];mantOk=true;go('splash');}
+
+function proxI(km,i){var p=Math.ceil(km/i)*i;if(p<=km)p+=i;return p;}
+
+function getChecklist(km,comb,trans,trac,atrasado){
+  var esDiesel=comb==='diesel';
+  var esManual=trans==='manual';
+  var esAWD=trac==='awd';
+  var esRWD=trac==='rwd';
+  var items=[];
+
+  if(atrasado){
+    items.push('⚠️ PUESTA AL CORRIENTE — Revisar todos los servicios atrasados con un mecánico de confianza');
+    items.push('Verificar nivel y estado de todos los fluidos (aceite, refrigerante, frenos, dirección, transmisión)');
+    items.push('Inspección visual completa de frenos (pastillas, discos y mangueras)');
+    items.push('Revisar estado de llantas y presión (PSI exacto del manual)');
+    items.push('Inspeccionar postes de batería y estado de la batería');
+    items.push('Revisar filtros de aire del motor y cabina');
+    items.push('Inspeccionar mangueras, bandas y sistema de enfriamiento');
+    if(esManual)items.push('Evaluar estado del embrague: patinamiento y ruidos');
+    items.push('Alinear y balancear llantas');
+    items.push('— Una vez completada la puesta al corriente, actualiza tu km en Configuración —');
+    return items;
+  }
+
+  items.push('Cambio de aceite y filtro '+(esDiesel?'(Diesel: especial DPF)':'(Gasolina: sintético)'));
+  items.push('Inspección de niveles y presión de neumáticos (PSI exacto)');
+
+  if(km%10000===0){
+    items.push('Rotación de neumáticos');
+    items.push('Alineación y balanceo (ambos ejes)');
+    items.push('Revisión visual y auditiva de frenos');
+    items.push('Limpieza de postes de batería (grasa dieléctrica)');
+    items.push('Limpieza del compartimento del motor (trapo húmedo)');
+    if(esDiesel)items.push('Diesel: Drenado de agua del filtro de combustible');
+  }
+
+  if(km%20000===0){
+    items.push('Afinación mayor (revisión sistema de encendido y combustible)');
+    items.push('Cambio de filtro de aire del motor');
+    items.push('Cambio de filtro de cabina (Aire Acondicionado)');
+    if(esManual)items.push('Evaluación de embrague: patinamiento, ruidos de collarín y suavidad');
+    if(esDiesel)items.push('Diesel: Reemplazo total de filtro de combustible');
+  }
+
+  if(km%40000===0){
+    if(esManual||esAWD||esRWD)items.push('Cambio de aceite de diferencial(es)'+(esAWD?' y transfer':''));
+    items.push('Cambio de líquido de frenos y sistema hidráulico de embrague');
+    items.push('Revisión de bomba de gasolina (nivel de tanque y presión)');
+  }
+
+  if(km%60000===0){
+    items.push('Servicio de transmisión: cambio de fluido y filtro (No Lifetime)');
+    if(esDiesel){items.push('Diesel: Inspección de sistema DPF/SCR y nivel de Urea');}
+    else{items.push('Gasolina: Agregar aditivo limpia inyectores (Polieteramina)');}
+  }
+
+  if(km%100000===0){
+    if(esDiesel){items.push('Diesel: Inspección de bujías de precalentamiento (Glow plugs)');}
+    else{items.push('Gasolina: Cambio de bujías (Preventivo)');}
+  }
+
+  return items;
+}
+
+function calcSvcs(){
+  if(!V)return[];
+  var pA=proxI(V.km,5000);
+  var kmA=pA-V.km;
+  var niv=kmA<=500?'urgent':kmA<=1500?'warn':'ok';
+  return[{icon:'🛢️',nombre:'Próximo servicio',due:'En '+kmA.toLocaleString()+' km · ~'+pA.toLocaleString()+' km',nivel:niv}];
+}
+
+function renderDash(){
+  if(!U||!V)return;
+  var h=new Date().getHours();
+  var s=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
+  document.getElementById('d-saludo').textContent=s+', '+U.nombre.split(' ')[0];
+  document.getElementById('d-car').textContent=V.marca+' '+V.modelo+' '+V.anio+' · '+(V.comb==='diesel'?'Diesel':'Gasolina')+' · '+(V.trans==='manual'?'Manual':'Automático');
+  document.getElementById('d-km').textContent=V.km.toLocaleString()+' km · Meta: 400,000 km';
+  document.getElementById('clima-banner').style.display=(U.ciudad==='mexicali'||U.ciudad==='tijuana')?'flex':'none';
+  document.getElementById('mant-banner').style.display=mantOk?'none':'flex';
+  var list=document.getElementById('rlist');
+  list.innerHTML='';
+  calcSvcs().forEach(function(sv){
+    var bg=sv.nivel==='urgent'?'#FCEBEB':sv.nivel==='warn'?'#FAEEDA':'#EAF3DE';
+    var bc=sv.nivel==='urgent'?'background:#FCEBEB;color:#A32D2D':sv.nivel==='warn'?'background:#FAEEDA;color:#854F0B':'background:#EAF3DE;color:#3B6D11';
+    var lbl=sv.nivel==='urgent'?'Urgente':sv.nivel==='warn'?'Próximo':'Al día';
+    var d=document.createElement('div');
+    d.className='rcard';d.onclick=function(){go('checklist');};
+    d.innerHTML='<div class="rico" style="background:'+bg+'">'+sv.icon+'</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#111;">'+sv.nombre+'</div><div style="font-size:11px;color:#777;margin-top:1px;">'+sv.due+'</div></div><span class="badge" style="'+bc+'">'+lbl+'</span>';
+    list.appendChild(d);
+  });
+  document.getElementById('consejo').textContent=consejos[new Date().getDate()%consejos.length];
+}
+
+function toggleReg(){
+  var p=document.getElementById('panel-reg');
+  var v=p.style.display==='block';
+  p.style.display=v?'none':'block';
+  if(!v){
+    document.getElementById('srv-km').value=V?V.km:'';
+    var its=['Cambio de aceite y filtro','Rotación y alineación','Cambio de filtros de aire','Cambio de líquido de frenos','Servicio de transmisión','Afinación mayor'];
+    var cont=document.getElementById('srv-rapidos');
+    cont.innerHTML='';
+    its.forEach(function(txt){
+      var btn=document.createElement('button');
+      btn.textContent=txt;
+      btn.style.cssText='background:#f4f4f0;border:0.5px solid #ddd;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;text-align:left;width:100%;';
+      btn.onclick=function(){
+        document.getElementById('srv-manual').value=txt;
+        cont.querySelectorAll('button').forEach(function(b){b.style.background='#f4f4f0';b.style.borderColor='#ddd';b.style.color='#111';});
+        btn.style.background='#FCEBEB';btn.style.borderColor='#B51E1E';btn.style.color='#B51E1E';
+      };
+      cont.appendChild(btn);
+    });
+  }
+}
+
+function guardarSrv(){
+  var srv=document.getElementById('srv-manual').value.trim();
+  var km=parseInt(document.getElementById('srv-km').value);
+  if(!srv||isNaN(km)){alert('Por favor indica el servicio y el kilometraje');return;}
+  H.unshift({fecha:new Date().toLocaleDateString('es-MX'),km:km,servicio:srv,auto:V.marca+' '+V.modelo});
+  var data=JSON.parse(localStorage.getItem('km1m')||'{}');
+  data.h=H;localStorage.setItem('km1m',JSON.stringify(data));
+  document.getElementById('panel-reg').style.display='none';
+  alert('✓ Servicio registrado en tu historial');
+}
+
+function renderChk(){
+  if(!V)return;
+  var pA=proxI(V.km,5000);
+  var atrasado=!mantOk&&H.length===0;
+  document.getElementById('chk-title').textContent=atrasado?'Puesta al corriente':'Servicio '+pA.toLocaleString()+' km';
+  document.getElementById('chk-sub').textContent=V.marca+' '+V.modelo+' · '+(V.comb==='diesel'?'Diesel':'Gasolina')+' · '+(V.trans==='manual'?'Manual':'Automático');
+  var lista=getChecklist(pA,V.comb,V.trans,V.trac||'fwd',atrasado);
+  var body=document.getElementById('chk-body');
+  body.innerHTML='';
+  lista.forEach(function(txt){
+    var d=document.createElement('div');
+    d.className='chk-item';
+    d.innerHTML='<div class="chk-box"></div><div style="font-size:13px;font-weight:500;color:#111;">'+txt+'</div>';
+    d.onclick=function(){d.querySelector('.chk-box').classList.toggle('checked');updProg();};
+    body.appendChild(d);
+  });
+  updProg();
+}
+
+function updProg(){
+  var total=document.querySelectorAll('#chk-body .chk-item').length;
+  var checked=document.querySelectorAll('#chk-body .chk-box.checked').length;
+  var pct=total?Math.round(checked/total*100):0;
+  document.getElementById('prog-txt').textContent=checked+' de '+total+' completados';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+function completar(){
+  if(!V)return;
+  var pA=proxI(V.km,5000);
+  var atrasado=!mantOk&&H.length===0;
+  var srvNombre=atrasado?'Puesta al corriente':'Servicio '+pA.toLocaleString()+' km';
+  if(H.some(function(h){return h.servicio===srvNombre;})){alert('Este servicio ya fue registrado.');return;}
+  var kmNuevo=prompt('Servicio registrado ✓\n\n¿Cuál es tu kilometraje actual?\n(Actualízalo para calcular tu próximo servicio)','');
+  var km=parseInt(kmNuevo);
+  var data=JSON.parse(localStorage.getItem('km1m')||'{}');
+  if(!isNaN(km)&&km>0){V.km=km;data.v=V;}
+  if(atrasado){mantOk=true;data.mantOk=true;}
+  H.unshift({fecha:new Date().toLocaleDateString('es-MX'),km:V.km,servicio:srvNombre,auto:V.marca+' '+V.modelo});
+  data.h=H;localStorage.setItem('km1m',JSON.stringify(data));
+  alert('✓ '+(atrasado?'Puesta al corriente completada.':'Servicio registrado.')+(!isNaN(km)&&km>0?' Km actualizado a '+km.toLocaleString()+'.':' Actualiza tu km en Configuración.'));
+  go('dashboard');
+}
+
+function renderHist(){
+  if(!V)return;
+  document.getElementById('hist-sub').textContent=V.marca+' '+V.modelo+' '+V.anio;
+  var body=document.getElementById('hist-body');
+  if(!H.length){body.innerHTML='<p style="font-size:13px;color:#999;text-align:center;margin-top:2rem;">Aún no tienes servicios registrados.<br>Completa tu primer checklist para comenzar.</p>';return;}
+  body.innerHTML='';
+  H.forEach(function(h){
+    var d=document.createElement('div');
+    d.style.cssText='background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;';
+    d.innerHTML='<div style="width:36px;height:36px;background:#FCEBEB;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🛢️</div><div><div style="font-size:13px;font-weight:600;color:#111;">'+h.servicio+'</div><div style="font-size:11px;color:#666;margin-top:2px;">'+h.km.toLocaleString()+' km · '+h.fecha+'</div><div style="font-size:11px;color:#639922;margin-top:2px;font-weight:500;">✓ Completado</div></div>';
+    body.appendChild(d);
+  });
+}
+
+function renderCfg(){
+  if(!U||!V)return;
+  document.getElementById('cfg-nom').textContent=U.nombre;
+  document.getElementById('cfg-av').textContent=U.nombre.charAt(0).toUpperCase();
+  document.getElementById('c-marca').value=V.marca;
+  document.getElementById('c-modelo').value=V.modelo;
+  document.getElementById('c-anio').value=V.anio;
+  document.getElementById('c-comb').value=V.comb||'gasolina';
+  document.getElementById('c-trans').value=V.trans||'automatica';
+  document.getElementById('c-trac').value=V.trac||'fwd';
+  document.getElementById('c-km').value=V.km;
+  document.getElementById('c-kmmes').value=V.kmmes;
+  document.getElementById('c-ciudad').value=U.ciudad;
+}
+
+function guardarCfg(){
+  V.marca=document.getElementById('c-marca').value;
+  V.modelo=document.getElementById('c-modelo').value;
+  V.anio=document.getElementById('c-anio').value;
+  V.comb=document.getElementById('c-comb').value;
+  V.trans=document.getElementById('c-trans').value;
+  V.trac=document.getElementById('c-trac').value;
+  V.km=parseInt(document.getElementById('c-km').value)||V.km;
+  V.kmmes=parseInt(document.getElementById('c-kmmes').value)||V.kmmes;
+  U.ciudad=document.getElementById('c-ciudad').value;
+  var data=JSON.parse(localStorage.getItem('km1m')||'{}');
+  data.nombre=U.nombre;data.email=U.email;data.pass=U.pass;data.ciudad=U.ciudad;data.v=V;data.h=H;data.mantOk=mantOk;
+  localStorage.setItem('km1m',JSON.stringify(data));
+  alert('✓ Cambios guardados');
+  go('dashboard');
+}
+
+function toggleSw(el){
+  var th=el.querySelector('.th');
+  var on=el.style.background==='rgb(181, 30, 30)';
+  el.style.background=on?'#ddd':'#B51E1E';
+  th.style.right=on?'':'2px';th.style.left=on?'2px':'';
+}
+
+function checkNotif(){
+  if(!V||!('Notification' in window)||Notification.permission!=='granted')return;
+  var pA=proxI(V.km,5000);
+  var kmA=pA-V.km;
+  if(kmA<=500)new Notification('🛢️ KM Un Millón',{body:'Servicio en '+kmA+' km — prepárate.'});
+  else if(kmA<=1500)new Notification('🛢️ KM Un Millón',{body:'Próximo servicio en '+kmA+' km.'});
+}
+
+window.onload=function(){
+  var s=JSON.parse(localStorage.getItem('km1m')||'null');
+  if(s&&s.email){U=s;V=s.v;H=s.h||[];mantOk=s.mantOk!==false;go('config');}
+  if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+};
+</script>
+</body>
+</html>
