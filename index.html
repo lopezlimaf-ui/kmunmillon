@@ -251,14 +251,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="display:flex;align-items:center;gap:12px;">
           <svg width="52" height="52" viewBox="0 0 52 52">
             <circle cx="26" cy="26" r="22" fill="none" stroke="#eee" stroke-width="4"/>
-            <circle cx="26" cy="26" r="22" fill="none" stroke="#B51E1E" stroke-width="4" stroke-dasharray="124" stroke-dashoffset="31" stroke-linecap="round" transform="rotate(-90 26 26)"/>
-            <text x="26" y="30" text-anchor="middle" font-size="13" font-weight="600" fill="#B51E1E">75%</text>
+            <circle id="health-ring" cx="26" cy="26" r="22" fill="none" stroke="#B51E1E" stroke-width="4" stroke-dasharray="124" stroke-dashoffset="31" stroke-linecap="round" transform="rotate(-90 26 26)"/>
+            <text id="health-pct" x="26" y="30" text-anchor="middle" font-size="13" font-weight="600" fill="#B51E1E">—</text>
           </svg>
           <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-            <div class="hrow"><span style="font-size:12px;color:#666;">Motor</span><div class="hbar-wrap"><div class="hbar" style="width:40%;background:#E24B4A;"></div></div></div>
-            <div class="hrow"><span style="font-size:12px;color:#666;">Frenos</span><div class="hbar-wrap"><div class="hbar" style="width:75%;background:#BA7517;"></div></div></div>
-            <div class="hrow"><span style="font-size:12px;color:#666;">Llantas</span><div class="hbar-wrap"><div class="hbar" style="width:65%;background:#BA7517;"></div></div></div>
-            <div class="hrow"><span style="font-size:12px;color:#666;">Batería</span><div class="hbar-wrap"><div class="hbar" style="width:85%;background:#639922;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Motor</span><div class="hbar-wrap"><div class="hbar" id="bar-motor" style="width:0%;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Frenos</span><div class="hbar-wrap"><div class="hbar" id="bar-frenos" style="width:0%;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Llantas</span><div class="hbar-wrap"><div class="hbar" id="bar-llantas" style="width:0%;"></div></div></div>
+            <div class="hrow"><span style="font-size:12px;color:#666;">Batería</span><div class="hbar-wrap"><div class="hbar" id="bar-bateria" style="width:0%;"></div></div></div>
           </div>
         </div>
       </div>
@@ -620,6 +620,97 @@ function renderCare(){
   });
 }
 
+// ── SALUD DEL VEHÍCULO (cálculo real) ──
+function calcHealth(){
+  if(!V) return {motor:0,frenos:0,llantas:0,bateria:0,total:0};
+
+  var kmActual = V.km;
+  var anio = parseInt(V.anio) || 2018;
+  var anioActual = new Date().getFullYear();
+
+  // Buscar último km de cada tipo de servicio en historial
+  function kmUltimoServicio(palabras){
+    for(var i=0;i<H.length;i++){
+      var s=H[i].servicio.toLowerCase();
+      for(var j=0;j<palabras.length;j++){
+        if(s.indexOf(palabras[j])>=0) return H[i].km;
+      }
+    }
+    return null;
+  }
+
+  // MOTOR — intervalo 5,000 km desde último cambio de aceite
+  var kmMotor = kmUltimoServicio(['aceite','oil']);
+  var motorPct;
+  if(kmMotor!==null){
+    var recorrido = kmActual - kmMotor;
+    motorPct = Math.max(0, Math.min(100, Math.round((1 - recorrido/5000)*100)));
+  } else {
+    // Sin historial: asumimos que está a la mitad del intervalo
+    var resto = 5000 - (kmActual % 5000);
+    motorPct = Math.round((resto/5000)*100);
+  }
+
+  // FRENOS — intervalo 20,000 km desde última revisión
+  var kmFreno = kmUltimoServicio(['freno','brake','líquido de frenos']);
+  var frenosPct;
+  if(kmFreno!==null){
+    var recFreno = kmActual - kmFreno;
+    frenosPct = Math.max(0, Math.min(100, Math.round((1 - recFreno/20000)*100)));
+  } else {
+    var restoFreno = 20000 - (kmActual % 20000);
+    frenosPct = Math.round((restoFreno/20000)*100);
+  }
+
+  // LLANTAS — intervalo 10,000 km desde última rotación
+  var kmLlanta = kmUltimoServicio(['rotaci','llanta','alineaci','balanceo']);
+  var llantasPct;
+  if(kmLlanta!==null){
+    var recLlanta = kmActual - kmLlanta;
+    llantasPct = Math.max(0, Math.min(100, Math.round((1 - recLlanta/10000)*100)));
+  } else {
+    var restoLlanta = 10000 - (kmActual % 10000);
+    llantasPct = Math.round((restoLlanta/10000)*100);
+  }
+
+  // BATERÍA — vida útil promedio 4 años desde año del vehículo
+  var edadAnios = anioActual - anio;
+  var bateriaPct = Math.max(0, Math.min(100, Math.round((1 - edadAnios/4)*100)));
+  // Más de 4 años = mínimo 10% (puede seguir funcionando)
+  if(bateriaPct<10) bateriaPct=10;
+
+  // TOTAL — promedio ponderado (motor pesa más)
+  var total = Math.round((motorPct*0.35 + frenosPct*0.25 + llantasPct*0.25 + bateriaPct*0.15));
+
+  return {motor:motorPct, frenos:frenosPct, llantas:llantasPct, bateria:bateriaPct, total:total};
+}
+
+function colorBarra(pct){
+  if(pct>=70) return '#639922';   // verde
+  if(pct>=40) return '#BA7517';   // amarillo
+  return '#E24B4A';               // rojo
+}
+
+function renderHealth(){
+  var h=calcHealth();
+  // Barras
+  document.getElementById('bar-motor').style.width=h.motor+'%';
+  document.getElementById('bar-motor').style.background=colorBarra(h.motor);
+  document.getElementById('bar-frenos').style.width=h.frenos+'%';
+  document.getElementById('bar-frenos').style.background=colorBarra(h.frenos);
+  document.getElementById('bar-llantas').style.width=h.llantas+'%';
+  document.getElementById('bar-llantas').style.background=colorBarra(h.llantas);
+  document.getElementById('bar-bateria').style.width=h.bateria+'%';
+  document.getElementById('bar-bateria').style.background=colorBarra(h.bateria);
+  // SVG círculo total
+  var circumference=124;
+  var offset=circumference-(circumference*(h.total/100));
+  document.getElementById('health-ring').setAttribute('stroke-dashoffset',offset.toFixed(1));
+  document.getElementById('health-ring').setAttribute('stroke',colorBarra(h.total));
+  document.getElementById('health-pct').textContent=h.total+'%';
+  document.getElementById('health-pct').setAttribute('fill',colorBarra(h.total));
+}
+
 function calcSvcs(){
   if(!V)return[];
   var pA=proxI(V.km,5000);
@@ -652,6 +743,7 @@ function renderDash(){
     list.appendChild(d);
   });
   document.getElementById('consejo').textContent=consejos[new Date().getDate()%consejos.length];
+  renderHealth();
   renderCare();
 }
 
