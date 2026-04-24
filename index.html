@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>KM Un Millón</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f0;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem;gap:1.5rem;min-height:100vh;}
@@ -90,9 +91,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tc-row a{color:#B51E1E;text-decoration:underline;cursor:pointer;}
 /* Racha en historial */
 .streak-banner{background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:12px;padding:12px 14px;margin:0 1.25rem 10px;display:flex;align-items:center;gap:12px;}
+/* Banner de actualización */
+.update-banner{background:#1a1a2e;color:#fff;font-size:12px;padding:8px 16px;display:none;justify-content:space-between;align-items:center;gap:8px;}
+.update-banner button{background:#B51E1E;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+/* Pantallas legales */
+.legal-body{padding:1.25rem;flex:1;overflow-y:auto;font-size:12px;color:#333;line-height:1.7;}
+.legal-body h2{font-size:13px;font-weight:700;color:#1a1a2e;margin:16px 0 6px;}
+.legal-body p{margin-bottom:8px;}
+.legal-body ul{padding-left:16px;margin-bottom:8px;}
+.legal-body ul li{margin-bottom:4px;}
 </style>
 </head>
 <body>
+
+<!-- Banner de actualización (fuera del frame, visible arriba) -->
+<div class="update-banner" id="update-banner" style="width:320px;border-radius:12px;margin-bottom:-8px;">
+  <span>🆕 Nueva versión disponible</span>
+  <button onclick="location.reload(true)">Actualizar ahora</button>
+</div>
 
 <div class="nav-tabs" id="nav-tabs" style="display:none;">
   <button class="nav-tab" onclick="go('dashboard')">Inicio</button>
@@ -151,7 +167,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <!-- ✅ NUEVO: Términos y Condiciones -->
       <div class="tc-row">
         <input type="checkbox" id="tc-check"/>
-        <label for="tc-check">Acepto los <a onclick="alert('Términos y Condiciones — próximamente en kmunmillon.com/terminos')">Términos y Condiciones</a> y el <a onclick="alert('Aviso de Privacidad — próximamente en kmunmillon.com/privacidad')">Aviso de Privacidad</a> de KM Un Millón.</label>
+        <label for="tc-check">Acepto los <a onclick="go('terminos')">Términos y Condiciones</a> y el <a onclick="go('privacidad')">Aviso de Privacidad</a> de KM Un Millón.</label>
       </div>
       <button class="btn-red" style="margin-top:auto;" onclick="doReg1()">Siguiente →</button>
       <button class="btn-ghost" onclick="go('splash')">← Regresar</button>
@@ -400,15 +416,146 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
       <button class="btn-red" onclick="guardarCfg()">Guardar cambios</button>
-      <button style="background:none;border:none;color:#999;font-size:12px;cursor:pointer;text-align:center;" onclick="cerrarSesion()">Cerrar sesión</button>
+      <button style="background:#25D366;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:6px;" onclick="enviarRecordatorioWA()">📲 Enviar recordatorio por WhatsApp</button>
+      <button style="background:none;border:none;color:#999;font-size:12px;cursor:pointer;text-align:center;margin-top:4px;" onclick="cerrarSesion()">Cerrar sesión</button>
     </div>
   </div>
 
-</div>
+  <!-- TÉRMINOS Y CONDICIONES -->
+  <div class="screen" id="screen-terminos">
+    <div class="chk-hdr">
+      <button class="back-btn" onclick="history.back()||go('reg1')">‹</button>
+      <div><div style="color:#fff;font-size:15px;font-weight:700;">Términos y Condiciones</div><div style="color:rgba(255,255,255,0.7);font-size:11px;">KM Un Millón · v1.0 · Abril 2026</div></div>
+    </div>
+    <div class="legal-body">
+      <h2>1. Aceptación</h2>
+      <p>Al crear una cuenta o usar KM Un Millón aceptas estos Términos. Si no estás de acuerdo, abstente de usar la plataforma.</p>
+      <h2>2. Descripción del servicio</h2>
+      <p>KM Un Millón es una plataforma de mantenimiento automotriz preventivo basada en metodología japonesa que ofrece: checklists personalizados, recordatorios por kilometraje, historial de servicios, indicadores de salud del vehículo y notificaciones periódicas.</p>
+      <h2>3. Registro de cuenta</h2>
+      <p>Al registrarte te comprometes a proporcionar información veraz y mantener la confidencialidad de tus credenciales. KM Un Millón no se responsabiliza por accesos no autorizados derivados del incumplimiento de esta obligación.</p>
+      <h2>4. Planes y suscripciones</h2>
+      <p>Se ofrece un período de prueba gratuito de 30 días. Los planes disponibles son:</p>
+      <ul>
+        <li>Plan Mensual: $20 MXN / mes</li>
+        <li>Plan Trimestral: $50 MXN / 3 meses</li>
+        <li>Plan Anual: $180 MXN / año</li>
+      </ul>
+      <p>No se realizan reembolsos por períodos parciales. Los precios pueden cambiar con aviso previo de 30 días.</p>
+      <h2>5. Limitación de responsabilidad</h2>
+      <p>KM Un Millón provee información orientativa. No sustituye el criterio de un mecánico certificado. Los indicadores de salud son estimaciones basadas en datos ingresados por el usuario. KM Un Millón no se responsabiliza por daños mecánicos o pérdidas derivadas del uso de la plataforma.</p>
+      <h2>6. Propiedad intelectual</h2>
+      <p>Todo el contenido de la plataforma — software, diseño, metodología e intervalos de servicio — es propiedad exclusiva de KM Un Millón. Queda prohibida su reproducción sin autorización escrita.</p>
+      <h2>7. Uso aceptable</h2>
+      <p>Queda prohibido usar la plataforma para actividades ilegales, intentar vulnerar la seguridad del sistema, o revender cuentas a terceros.</p>
+      <h2>8. Ley aplicable</h2>
+      <p>Estos términos se rigen por las leyes de México. Cualquier controversia se somete a los tribunales de Mexicali, Baja California.</p>
+      <h2>9. Contacto</h2>
+      <p>privacidad@kmunmillon.com · kmunmillon.com</p>
+      <p style="color:#aaa;font-size:11px;margin-top:16px;">KM Un Millón © 2026 · Todos los derechos reservados</p>
+    </div>
+  </div>
 
-<script>
+  <!-- AVISO DE PRIVACIDAD -->
+  <div class="screen" id="screen-privacidad">
+    <div class="chk-hdr">
+      <button class="back-btn" onclick="history.back()||go('reg1')">‹</button>
+      <div><div style="color:#fff;font-size:15px;font-weight:700;">Aviso de Privacidad</div><div style="color:rgba(255,255,255,0.7);font-size:11px;">LFPDPPP · v1.0 · Abril 2026</div></div>
+    </div>
+    <div class="legal-body">
+      <h2>1. Responsable</h2>
+      <p>KM Un Millón, con domicilio en Mexicali, Baja California, México, es responsable del tratamiento de tus datos personales conforme a la LFPDPPP.</p>
+      <h2>2. Datos que recabamos</h2>
+      <p><strong>Identificación:</strong> nombre, correo electrónico, ciudad.</p>
+      <p><strong>Vehículo:</strong> marca, modelo, año, combustible, transmisión, tracción, kilometraje.</p>
+      <p><strong>Uso:</strong> historial de servicios, tareas completadas, fechas de acceso.</p>
+      <p>No recabamos datos sensibles. Los datos de pago son procesados por Stripe y Conekta bajo sus propias políticas.</p>
+      <h2>3. Finalidades</h2>
+      <p><strong>Primarias:</strong> crear tu cuenta, generar checklists personalizados, calcular salud del vehículo, enviar recordatorios, procesar pagos y brindar soporte.</p>
+      <p><strong>Secundarias:</strong> enviarte novedades de la plataforma y encuestas de satisfacción. Puedes oponerte escribiendo a privacidad@kmunmillon.com.</p>
+      <h2>4. Transferencia de datos</h2>
+      <p>No vendemos tus datos. Solo los compartimos con proveedores de infraestructura tecnológica y procesadores de pago bajo acuerdos de confidencialidad, o cuando lo requiera la ley.</p>
+      <h2>5. Derechos ARCO</h2>
+      <p>Tienes derecho a Acceder, Rectificar, Cancelar u Oponerte al tratamiento de tus datos. Envía tu solicitud a privacidad@kmunmillon.com con tu nombre y descripción del derecho a ejercer. Respondemos en máximo 20 días hábiles.</p>
+      <h2>6. Seguridad</h2>
+      <p>Tus datos se transmiten cifrados mediante HTTPS/TLS y se almacenan con control de acceso restringido. Las contraseñas se guardan cifradas.</p>
+      <h2>7. Cambios al aviso</h2>
+      <p>Cualquier modificación será notificada por correo o dentro de la app con al menos 15 días de anticipación.</p>
+      <h2>8. Autoridad competente</h2>
+      <p>Puedes acudir al INAI si consideras que tus derechos no fueron debidamente atendidos.</p>
+      <p style="color:#aaa;font-size:11px;margin-top:16px;">KM Un Millón © 2026 · Mexicali, Baja California, México</p>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
 var U=null,V=null,H=[];
 var mantOk=true;
+var APP_VERSION='1.2.0'; // ← incrementar con cada nueva versión
+
+// ── KM PROYECTADO (actualización automática diaria) ──
+function kmProyectado(){
+  if(!V) return 0;
+  var data=JSON.parse(localStorage.getItem('km1m')||'{}');
+  var fechaRef=data.kmFechaRef;
+  var kmRef=data.kmRef||V.km;
+  var hoy=new Date().toDateString();
+  if(!fechaRef){
+    // Primera vez: guardamos referencia de hoy
+    data.kmRef=V.km;
+    data.kmFechaRef=hoy;
+    localStorage.setItem('km1m',JSON.stringify(data));
+    return V.km;
+  }
+  var diasPasados=Math.floor((new Date()-new Date(fechaRef))/(1000*60*60*24));
+  var kmDiarios=(V.kmmes||1300)/30;
+  var kmActualProyectado=Math.round(kmRef+(diasPasados*kmDiarios));
+  // Actualizamos V.km con la proyección para que todo el sistema la use
+  V.km=kmActualProyectado;
+  return kmActualProyectado;
+}
+
+// ── EMAILJS: enviar recordatorio por correo ──
+function enviarRecordatorioPorCorreo(destinatario, nombre, servicio, kmFaltante){
+  // CONFIGURACIÓN EmailJS — reemplazar con tus claves reales
+  var EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID';
+  var EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';
+  var EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY';
+  if(EMAILJS_SERVICE_ID==='TU_SERVICE_ID'){
+    console.log('EmailJS no configurado aún — recordatorio pendiente para:',destinatario);
+    return;
+  }
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: destinatario,
+    to_name:  nombre,
+    servicio: servicio,
+    km_faltante: kmFaltante,
+    app_name: 'KM Un Millón'
+  }).then(function(){
+    console.log('Recordatorio enviado a '+destinatario);
+  }).catch(function(err){
+    console.error('Error EmailJS:',err);
+  });
+}
+
+// ── WHATSAPP: link directo de recordatorio ──
+function abrirWhatsApp(nombre, servicio, kmFaltante){
+  var msg=encodeURIComponent(
+    '🚗 *KM Un Millón* — Recordatorio de mantenimiento\n\n'+
+    'Hola '+nombre+', tu próximo servicio es:\n*'+servicio+'*\nFaltan aproximadamente *'+kmFaltante+' km*.\n\n'+
+    'Agenda tu cita a tiempo para mantener tu vehículo al 100%. 🛢️'
+  );
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+// ── DETECCIÓN DE VERSIÓN NUEVA ──
+function checkVersion(){
+  var versionGuardada=localStorage.getItem('km1m_version');
+  if(versionGuardada && versionGuardada!==APP_VERSION){
+    document.getElementById('update-banner').style.display='flex';
+  }
+  localStorage.setItem('km1m_version',APP_VERSION);
+}
 var consejos=["No bajes el tanque por debajo de ¼. La bomba usa la gasolina para enfriarse.","Espera 10 segundos antes de arrancar y conduce suave los primeros 5 km.","Revisa el nivel de aceite cada 2 semanas con el motor frío.","En verano estaciona a la sombra — el calor sube la temperatura del aceite.","Evita acelerones y frenadas bruscas. El motor japonés vive de la suavidad.","Llena el filtro de aceite antes de instalarlo — el motor no arranca en seco.","Un termostato defectuoso sobrecalienta el motor silenciosamente.","Las bandas se endurecen con el calor extremo. Revísalas cada 10,000 km.","La presión de neumáticos correcta mejora el rendimiento de gasolina hasta 3%.","Agrega aditivo de gasolina una vez al mes. Limpia inyectores y válvulas silenciosamente."];
 
 // ── UTILIDADES DE FECHA ──
@@ -721,11 +868,13 @@ function calcSvcs(){
 
 function renderDash(){
   if(!U||!V)return;
+  // Actualizar km con proyección diaria
+  var kmActual=kmProyectado();
   var h=new Date().getHours();
   var s=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
   document.getElementById('d-saludo').textContent=s+', '+U.nombre.split(' ')[0];
   document.getElementById('d-car').textContent=V.marca+' '+V.modelo+' '+V.anio+' · '+(V.comb==='diesel'?'Diesel':'Gasolina')+' · '+(V.trans==='manual'?'Manual':'Automático');
-  document.getElementById('d-km').textContent=V.km.toLocaleString()+' km · Meta: 400,000 km';
+  document.getElementById('d-km').textContent=kmActual.toLocaleString()+' km estimados · Meta: 400,000 km';
   document.getElementById('clima-banner').style.display=(U.ciudad==='mexicali'||U.ciudad==='tijuana')?'flex':'none';
   document.getElementById('mant-banner').style.display=mantOk?'none':'flex';
   // Racha
@@ -900,9 +1049,17 @@ function checkNotif(){
   if(pendientes.length>0)new Notification('📋 KM Un Millón',{body:'Tienes '+pendientes.length+' tarea(s) de cuidado mensual pendiente(s).'});
 }
 
+function enviarRecordatorioWA(){
+  if(!V)return;
+  var pA=proxI(V.km,5000);
+  var kmA=pA-V.km;
+  abrirWhatsApp(U.nombre,'Servicio '+pA.toLocaleString()+' km',kmA.toLocaleString());
+}
+
 window.onload=function(){
+  checkVersion();
   var s=JSON.parse(localStorage.getItem('km1m')||'null');
-  if(s&&s.email){U=s;V=s.v;H=s.h||[];mantOk=s.mantOk!==false;go('config');}
+  if(s&&s.email){U=s;V=s.v;H=s.h||[];mantOk=s.mantOk!==false;go('dashboard');}
   if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
 };
 </script>
