@@ -374,6 +374,15 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
   </div>
   <div class="banner banner-clima" id="clima-banner">🌡️ <span><strong>Clima extremo detectado</strong> — Revisa refrigerante y batería con más frecuencia.</span></div>
   <div class="banner banner-mant" id="mant-banner">⚠️ <span><strong>Mantenimiento atrasado</strong> — Tu checklist incluye una puesta al corriente.</span></div>
+  <!-- CARD GARAGE -->
+  <div id="garage-dash-card" onclick="go('garage')" style="margin:12px 16px 4px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .15s" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+    <div style="width:42px;height:42px;border-radius:10px;background:#f0f0ec;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🚗</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:bold" id="garage-card-titulo">Mi Garage</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px" id="garage-card-sub">Administra tus vehículos</div>
+    </div>
+    <div style="font-size:18px;color:var(--text-3)">›</div>
+  </div>
   <div class="section-head"><div class="section-label">Próximo servicio</div><div class="streak-chip">🔥 <span id="streak-num">0</span> meses</div></div>
   <div id="rlist"></div>
   <div class="section-head"><div class="section-label">Cuidado mensual</div><div style="font-size:12px;color:var(--text-3)">🗓️ <span id="care-fecha"></span></div></div>
@@ -703,6 +712,18 @@ function renderDash(){
   document.getElementById('consejo').textContent=consejos[consejoIdx];
   var lbl=document.getElementById('garage-btn-label');
   if(lbl)lbl.textContent=AUTOS.length>1?AUTOS.length+' autos — '+auto.marca+' '+auto.modelo:'Mi Garage';
+  var gct=document.getElementById('garage-card-titulo'),gcs=document.getElementById('garage-card-sub');
+  if(gct)gct.textContent=AUTOS.length>1?'Mi Garage — '+AUTOS.length+' vehículos':'Mi Garage';
+  if(gcs){
+    if(AUTOS.length<=1){gcs.textContent='Toca para agregar más vehículos';}
+    else{
+      var urgentes=AUTOS.filter(function(a){var k=kmProy(a);return(proxI(k,5000)-k)<=500;}).length;
+      var proximos=AUTOS.filter(function(a){var k=kmProy(a);var f=proxI(k,5000)-k;return f>500&&f<=1500;}).length;
+      if(urgentes>0)gcs.textContent='🔴 '+urgentes+' vehículo'+(urgentes>1?'s':'')+' con servicio URGENTE';
+      else if(proximos>0)gcs.textContent='🟡 '+proximos+' vehículo'+(proximos>1?'s':'')+' con servicio próximo';
+      else gcs.textContent='✅ Todos los vehículos al día';
+    }
+  }
   var pA=proxI(km,5000),kmA=pA-km,niv=kmA<=500?'urgent':kmA<=1500?'warn':'ok';
   var col=niv==='urgent'?{bg:'#FCEBEB',c:'#A32D2D',l:'Urgente'}:niv==='warn'?{bg:'#FAEEDA',c:'#854F0B',l:'Próximo'}:{bg:'#EAF3DE',c:'#3B6D11',l:'Al día'};
   var list=document.getElementById('rlist');list.innerHTML='';
