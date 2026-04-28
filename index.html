@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KM Un Millón">
 <link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{--red:#B51E1E;--red-dark:#8A1414;--red-light:#FCEBEB;--green:#639922;--green-light:#EAF3DE;--yellow:#BA7517;--yellow-light:#FAEEDA;--bg:#F5F4F0;--card:#FFFFFF;--border:#E0DED8;--text:#111111;--text-2:#555555;--text-3:#888888;--radius:14px;--font:'Georgia',serif}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -537,7 +538,7 @@ function mantOk(){var v=VA();return v?(v.mantOk!==false):true;}
 var consejos=["No bajes el tanque por debajo de ¼. La bomba usa la gasolina para enfriarse.","Espera 10 segundos antes de arrancar y conduce suave los primeros 5 km.","Revisa el nivel de aceite cada 2 semanas con el motor frío.","En verano estaciona a la sombra — el calor sube la temperatura del aceite.","Evita acelerones y frenadas bruscas. El motor japonés vive de la suavidad.","Llena el filtro de aceite antes de instalarlo — el motor no arranca en seco.","Un termostato defectuoso sobrecalienta el motor silenciosamente.","Las bandas se endurecen con el calor extremo. Revísalas cada 10,000 km.","La presión de neumáticos correcta mejora el rendimiento de gasolina hasta 3%.","Agrega aditivo de gasolina una vez al mes. Limpia inyectores y válvulas silenciosamente."];
 
 // EmailJS — reemplaza con tus claves reales
-var EJS_SVC='TU_SERVICE_ID',EJS_TPL='TU_TEMPLATE_ID',EJS_KEY='TU_PUBLIC_KEY';
+var EJS_SVC='service_euk6g6o',EJS_TPL='template_odweaer',EJS_KEY='4hVvU51GJRmb9u15N';
 function enviarEmail(dest,nom,srv,kmF){
   if(EJS_SVC==='TU_SERVICE_ID'){console.log('[EmailJS] no configurado');return;}
   if(typeof emailjs==='undefined')return;
