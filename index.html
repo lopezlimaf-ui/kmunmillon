@@ -11,6 +11,23 @@
 <link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.conekta.io/js/latest/conekta.js"></script>
+<style>
+/* MODAL PAGO */
+#modal-pago{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:flex-end;justify-content:center}
+#modal-pago.open{display:flex}
+.modal-card{background:var(--card);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:430px}
+.modal-title{font-size:20px;font-weight:bold;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text-2);margin-bottom:20px}
+.modal-plan-badge{background:var(--red-light);color:var(--red);font-size:12px;font-weight:bold;padding:4px 12px;border-radius:99px;display:inline-block;margin-bottom:16px}
+.pay-field{width:100%;padding:14px 16px;border:1px solid var(--border);border-radius:10px;font-size:15px;background:var(--bg);font-family:var(--font);color:var(--text);outline:none;margin-bottom:12px}
+.pay-field:focus{border-color:var(--red)}
+.pay-row{display:flex;gap:10px}
+.pay-row .pay-field{flex:1}
+.pay-err{display:none;background:var(--red-light);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px}
+.modal-close{background:none;border:none;font-size:22px;color:var(--text-3);cursor:pointer;float:right;margin-top:-4px}
+.pay-secure{font-size:11px;color:var(--text-3);text-align:center;margin-top:10px}
+</style>
 <style>
 :root{--red:#B51E1E;--red-dark:#8A1414;--red-light:#FCEBEB;--green:#639922;--green-light:#EAF3DE;--yellow:#BA7517;--yellow-light:#FAEEDA;--bg:#F5F4F0;--card:#FFFFFF;--border:#E0DED8;--text:#111111;--text-2:#555555;--text-3:#888888;--radius:14px;--font:'Georgia',serif}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -447,9 +464,15 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 <div class="screen" id="screen-planes" style="order:1">
   <div class="planes-header"><div class="planes-title">Elige tu plan</div><div class="planes-sub">Cuando estés listo</div></div>
   <div class="trial-banner"><div class="trial-label">Tu periodo gratuito</div><div class="trial-main">30 días</div><div class="trial-sub">Elige tu plan cuando estés listo</div></div>
-  <div class="plan-card"><div class="plan-name">Mensual</div><div class="plan-desc">Cancela cuando quieras</div><div class="plan-price">$20 <span>MXN / mes</span></div><button class="plan-btn">Próximamente — acceso gratis por 30 días</button></div>
-  <div class="plan-card"><div class="plan-name">Trimestral <span style="font-size:12px;color:var(--green);font-weight:bold">Ahorra $10</span></div><div class="plan-desc">3 meses · $16.67/mes</div><div class="plan-price">$50 <span>MXN / 3 meses</span></div><button class="plan-btn">Próximamente — acceso gratis por 30 días</button></div>
-  <div class="plan-card popular"><div class="plan-badge">MÁS POPULAR</div><div class="plan-name">Anual <span style="font-size:12px;color:var(--green);font-weight:bold">3 meses gratis</span></div><div class="plan-desc">12 meses · $15/mes</div><div class="plan-price">$180 <span>MXN / año</span></div><button class="plan-btn">Próximamente — acceso gratis por 30 días</button></div>
+  <div class="plan-card"><div class="plan-name">Mensual</div><div class="plan-desc">Cancela cuando quieras</div><div class="plan-price">$20 <span>MXN / mes</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_mensual_km','Plan Mensual — $20 MXN/mes')">Comenzar 30 días gratis →</button></div>
+  <div class="plan-card"><div class="plan-name">Trimestral <span style="font-size:12px;color:var(--green);font-weight:bold">Ahorra $10</span></div><div class="plan-desc">3 meses · $16.67/mes</div><div class="plan-price">$50 <span>MXN / 3 meses</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_trimestral_km','Plan Trimestral — $50 MXN/3 meses')">Comenzar 30 días gratis →</button></div>
+  <div class="plan-card popular"><div class="plan-badge">MÁS POPULAR</div><div class="plan-name">Anual <span style="font-size:12px;color:var(--green);font-weight:bold">3 meses gratis</span></div><div class="plan-desc">12 meses · $15/mes</div><div class="plan-price">$180 <span>MXN / año</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_anual_km','Plan Anual — $180 MXN/año')">Comenzar 30 días gratis →</button></div>
+  <div class="plan-card" style="border-color:#111;background:#111;color:#fff">
+    <div class="plan-name" style="color:#fff">🏢 Plan Empresarial</div>
+    <div class="plan-desc" style="color:#aaa">Para flotas y pequeñas empresas</div>
+    <div style="font-size:13px;color:#aaa;margin:10px 0;line-height:1.6">¿Tienes más de un vehículo de empresa? Diseñamos un plan a tu medida según el tamaño de tu flota.</div>
+    <button class="plan-btn" style="opacity:1;background:var(--red)" onclick="window.open('https://forms.gle/ivL7SnifjUqiqgse7','_blank')">Solicitar cotización →</button>
+  </div>
   <div class="planes-footer">Pago seguro · Cancela en cualquier momento</div>
 </div>
 
@@ -526,11 +549,30 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 </div>
 
 </div><!-- /app -->
+
+<!-- MODAL PAGO CONEKTA -->
+<div id="modal-pago">
+  <div class="modal-card">
+    <button class="modal-close" onclick="cerrarModalPago()">✕</button>
+    <div class="modal-title">Suscribirse</div>
+    <div class="modal-sub">30 días gratis · Sin cargo hasta que terminen</div>
+    <div class="modal-plan-badge" id="modal-plan-nombre">Plan Mensual — $20 MXN/mes</div>
+    <div class="pay-err" id="pay-err"></div>
+    <input class="pay-field" id="pay-nombre" placeholder="Nombre en la tarjeta" type="text">
+    <input class="pay-field" id="pay-num" placeholder="Número de tarjeta" type="tel" maxlength="19">
+    <div class="pay-row">
+      <input class="pay-field" id="pay-exp" placeholder="MM/AA" type="tel" maxlength="5">
+      <input class="pay-field" id="pay-cvc" placeholder="CVC" type="tel" maxlength="4">
+    </div>
+    <button class="btn-primary" id="pay-btn" onclick="procesarPago()">Comenzar 30 días gratis →</button>
+    <div class="pay-secure">🔒 Pago seguro · Powered by Conekta</div>
+  </div>
+</div>
 <script>
 // ════════════════════════════════
 // KM UN MILLÓN v1.4.0 — SUPABASE
 // ════════════════════════════════
-var APP_VERSION='1.4.0';
+var APP_VERSION='1.5.0';
 
 // SUPABASE CONFIG
 var SUPA_URL='https://jhphmomrtyunfxomhkdx.supabase.co';
@@ -943,6 +985,77 @@ function pedirNotificaciones(){
 function enviarRecordatorioWA(){
   var auto=VA();if(!auto||!U)return;var pA=proxI(auto.km,5000),kmA=pA-auto.km;
   window.open('https://wa.me/?text='+encodeURIComponent('🚗 *KM Un Millón* — Recordatorio de mantenimiento\n\nHola '+U.nombre+', tu *'+auto.marca+' '+auto.modelo+'* necesita:\n*Servicio '+pA.toLocaleString()+' km*\nFaltan aproximadamente *'+kmA.toLocaleString()+' km*.\n\nAgenda tu cita a tiempo. 🛢️'),'_blank');
+}
+
+// ── CONEKTA PAGOS ──
+var CONEKTA_PUB='key_MvnEHXzHdRQkhik40oKSSOE';
+var SUPA_FUNC_URL='https://jhphmomrtyunfxomhkdx.supabase.co/functions/v1/procesar-pago';
+var _planSeleccionado='';
+
+function abrirModalPago(planId, planNombre){
+  _planSeleccionado=planId;
+  document.getElementById('modal-plan-nombre').textContent=planNombre;
+  document.getElementById('pay-err').style.display='none';
+  document.getElementById('pay-num').value='';
+  document.getElementById('pay-exp').value='';
+  document.getElementById('pay-cvc').value='';
+  document.getElementById('pay-nombre').value='';
+  document.getElementById('modal-pago').classList.add('open');
+}
+function cerrarModalPago(){
+  document.getElementById('modal-pago').classList.remove('open');
+}
+
+// Formatear número de tarjeta
+document.addEventListener('DOMContentLoaded',function(){
+  var numEl=document.getElementById('pay-num');
+  if(numEl){numEl.addEventListener('input',function(){var v=this.value.replace(/\D/g,'').substring(0,16);this.value=v.replace(/(.{4})/g,'$1 ').trim();});}
+  var expEl=document.getElementById('pay-exp');
+  if(expEl){expEl.addEventListener('input',function(){var v=this.value.replace(/\D/g,'');if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2,4);this.value=v;});}
+});
+
+async function procesarPago(){
+  var nombre=document.getElementById('pay-nombre').value.trim();
+  var num=document.getElementById('pay-num').value.replace(/\s/g,'');
+  var exp=document.getElementById('pay-exp').value.split('/');
+  var cvc=document.getElementById('pay-cvc').value.trim();
+  var errEl=document.getElementById('pay-err');
+  var btn=document.getElementById('pay-btn');
+
+  if(!nombre||num.length<15||exp.length!==2||cvc.length<3){
+    errEl.textContent='Por favor completa todos los campos correctamente';
+    errEl.style.display='block';return;
+  }
+
+  btn.textContent='Procesando...';btn.disabled=true;errEl.style.display='none';
+
+  try{
+    // Tokenizar tarjeta con Conekta
+    Conekta.setPublicKey(CONEKTA_PUB);
+    Conekta.setLanguage('es');
+    var tokenRes=await new Promise(function(resolve,reject){
+      Conekta.Token.create({
+        card:{number:num,name:nombre,exp_year:'20'+exp[1],exp_month:exp[0],cvc:cvc}
+      },function(token){resolve(token);},function(err){reject(err);});
+    });
+
+    // Enviar a Supabase Edge Function
+    var res=await fetch(SUPA_FUNC_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
+      body:JSON.stringify({token:tokenRes.id,plan:_planSeleccionado,nombre:U.nombre,email:U.email})
+    });
+    var data=await res.json();
+    if(!data.ok)throw new Error(data.error||'Error al procesar el pago');
+
+    cerrarModalPago();
+    alert('✅ ¡Suscripción activada!\n\n30 días gratis comenzaron hoy. Te avisaremos antes de tu primer cargo.');
+    btn.textContent='Comenzar 30 días gratis →';btn.disabled=false;
+  }catch(e){
+    errEl.textContent=e.message||'Error al procesar. Verifica los datos de tu tarjeta.';
+    errEl.style.display='block';
+    btn.textContent='Comenzar 30 días gratis →';btn.disabled=false;
+  }
 }
 
 // VERSIÓN
