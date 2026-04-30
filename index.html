@@ -764,16 +764,22 @@ async function cancelarSuscripcion(){
   var conf=confirm('¿Deseas cancelar tu suscripción?\n\nSeguirás teniendo acceso hasta el final de tu periodo actual. No se realizarán más cargos.');
   if(!conf)return;
   try{
+    // Obtener ID de suscripción desde Supabase
+    var uRes=await supa.from('usuarios').select('conekta_suscripcion_id').eq('id',U.supaId).single();
+    var suscId=uRes.data&&uRes.data.conekta_suscripcion_id;
+    if(!suscId)throw new Error('No se encontró suscripción activa');
     var res=await fetch('https://jhphmomrtyunfxomhkdx.supabase.co/functions/v1/cancelar-suscripcion',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
-      body:JSON.stringify({email:U.email})
+      body:JSON.stringify({suscripcion_id:suscId})
     });
     var data=await res.json();
-    if(data.ok){alert('✅ Suscripción cancelada.\n\nSiguirás teniendo acceso hasta el final de tu periodo. Puedes reactivar en cualquier momento desde Planes.');}
-    else{throw new Error(data.error||'Error al cancelar');}
+    if(data.ok){
+      await supa.from('usuarios').update({plan:'free',conekta_suscripcion_id:null}).eq('id',U.supaId);
+      U.plan='free';saveLocal();
+      alert('✅ Suscripción cancelada.\n\nSeguirás teniendo acceso hasta el final de tu periodo. Puedes reactivar en cualquier momento desde Planes.');
+    }else{throw new Error(data.error||'Error al cancelar');}
   }catch(e){
-    // Si no hay suscripción activa o error, mostrar contacto
     alert('Para cancelar tu suscripción escríbenos a:\n\nkmunmillon@gmail.com\n\nTe respondemos en menos de 24 horas.');
   }
 }
