@@ -266,7 +266,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
     <button class="btn-primary" onclick="go('login')">Iniciar sesión</button>
     <button class="btn-ghost" onclick="go('reg1')">Crear cuenta gratis →</button>
     <div style="font-size:12px;color:#555;margin-top:14px">30 días gratis · Sin tarjeta requerida</div>
-    <div class="splash-beta">☁️ <strong style="color:#aaa">Versión Beta 1.4.0</strong><br>Tu información ahora se guarda en la nube. Accede desde cualquier dispositivo.</div>
+    <div class="splash-beta">☁️ <strong style="color:#aaa">Versión 1.7.0</strong><br>Tu información se guarda en la nube. Plan Individual $20/mes · Plan Familiar $50/mes · 30 días gratis.</div>
   </div>
 </div>
 
@@ -471,9 +471,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 <div class="screen" id="screen-planes" style="order:1">
   <div class="planes-header"><div class="planes-title">Elige tu plan</div><div class="planes-sub">Cuando estés listo</div></div>
   <div class="trial-banner"><div class="trial-label">Tu periodo gratuito</div><div class="trial-main">30 días</div><div class="trial-sub">Elige tu plan cuando estés listo</div></div>
-  <div class="plan-card"><div class="plan-name">Mensual</div><div class="plan-desc">Cancela cuando quieras</div><div class="plan-price">$20 <span>MXN / mes</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_mensual_km','Plan Mensual — $20 MXN/mes')">Comenzar 30 días gratis →</button></div>
-  <div class="plan-card"><div class="plan-name">Trimestral <span style="font-size:12px;color:var(--green);font-weight:bold">Ahorra $10</span></div><div class="plan-desc">3 meses · $16.67/mes</div><div class="plan-price">$50 <span>MXN / 3 meses</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_trimestral_km','Plan Trimestral — $50 MXN/3 meses')">Comenzar 30 días gratis →</button></div>
-  <div class="plan-card popular"><div class="plan-badge">MÁS POPULAR</div><div class="plan-name">Anual <span style="font-size:12px;color:var(--green);font-weight:bold">3 meses gratis</span></div><div class="plan-desc">12 meses · $15/mes</div><div class="plan-price">$180 <span>MXN / año</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_anual_km','Plan Anual — $180 MXN/año')">Comenzar 30 días gratis →</button></div>
+  <div class="plan-card"><div class="plan-name">Individual</div><div class="plan-desc">1 vehículo · Cancela cuando quieras</div><div class="plan-price">$20 <span>MXN / mes</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_mensual_km','Plan Individual — $20 MXN/mes')">Comenzar 30 días gratis →</button></div>
+  <div class="plan-card popular"><div class="plan-badge">MÁS POPULAR</div><div class="plan-name">Familiar <span style="font-size:12px;color:var(--green);font-weight:bold">Hasta 3 autos</span></div><div class="plan-desc">Cada miembro con su propia cuenta</div><div class="plan-price">$50 <span>MXN / mes</span></div><button class="plan-btn" style="opacity:1" onclick="abrirModalPago('plan_familiar_km','Plan Familiar — $50 MXN/mes')">Comenzar 30 días gratis →</button></div>
   <div class="plan-card" style="border-color:#111;background:#111;color:#fff">
     <div class="plan-name" style="color:#fff">🏢 Plan Empresarial</div>
     <div class="plan-desc" style="color:#aaa">Para flotas y pequeñas empresas</div>
@@ -504,6 +503,9 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
       <input type="number" id="c-km" placeholder="Kilometraje actual">
       <input type="number" id="c-kmmes" placeholder="Km por mes">
       <select id="c-ciudad"><option value="mexicali">Mexicali, BC</option><option value="tijuana">Tijuana, BC</option><option value="otra">Otra ciudad</option></select>
+      <input type="number" id="c-llantas-km" placeholder="¿A cuántos km cambiaste las llantas? (ej. 45000)">
+      <input type="number" id="c-llantas-anio" placeholder="¿En qué año cambiaste las llantas? (ej. 2022)">
+      <input type="number" id="c-bateria-anio" placeholder="¿En qué año cambiaste la batería? (ej. 2023)">
     </div>
   </div>
   <div class="cfg-section">
@@ -580,7 +582,7 @@ html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--t
 // ════════════════════════════════
 // KM UN MILLÓN v1.4.0 — SUPABASE
 // ════════════════════════════════
-var APP_VERSION='1.6.0';
+var APP_VERSION='1.7.0';
 
 // SUPABASE CONFIG
 var SUPA_URL='https://jhphmomrtyunfxomhkdx.supabase.co';
@@ -642,16 +644,17 @@ async function loadFromSupabase(userId){
   try{
     var uRes=await supa.from('usuarios').select('*').eq('id',userId).single();
     if(uRes.data){
-      U={supaId:userId,nombre:uRes.data.nombre,email:uRes.data.email,ciudad:uRes.data.ciudad};
+      U={supaId:userId,nombre:uRes.data.nombre,email:uRes.data.email,ciudad:uRes.data.ciudad,plan:uRes.data.plan||'free',esTitular:uRes.data.es_titular!==false,titularId:uRes.data.titular_id};
     }
     var aRes=await supa.from('autos').select('*').eq('user_id',userId).order('created_at');
     if(aRes.data&&aRes.data.length){
-      AUTOS=aRes.data.map(function(a){return{supaId:a.id,marca:a.marca,modelo:a.modelo,anio:a.anio,comb:a.comb,trans:a.trans,trac:a.trac||'fwd',km:a.km,kmRef:a.km_ref,kmFechaRef:a.km_fecha_ref,kmmes:a.km_mes||1300,mantOk:a.mant_ok!==false,h:[],care:{}};});
-      ACTIVE_IDX=aRes.data.findIndex(function(a){return a.es_activo;})||0;
-      // Cargar historial de cada auto
+      AUTOS=aRes.data.map(function(a){return{supaId:a.id,marca:a.marca,modelo:a.modelo,anio:a.anio,comb:a.comb,trans:a.trans,trac:a.trac||'fwd',km:a.km,kmRef:a.km_ref,kmFechaRef:a.km_fecha_ref,kmmes:a.km_mes||1300,mantOk:a.mant_ok!==false,llantasKm:a.llantas_km,llantasAnio:a.llantas_anio,bateriaAnio:a.bateria_anio,h:[],care:{}};});
+      ACTIVE_IDX=Math.max(0,aRes.data.findIndex(function(a){return a.es_activo;}));
       for(var i=0;i<AUTOS.length;i++){
         var hRes=await supa.from('historial').select('*').eq('auto_id',AUTOS[i].supaId).order('created_at',{ascending:false});
         if(hRes.data)AUTOS[i].h=hRes.data.map(function(h){return{fecha:h.fecha,km:h.km,servicio:h.servicio,tipo:h.tipo};});
+        var cRes=await supa.from('cuidado').select('tarea,completado').eq('user_id',userId).eq('auto_id',AUTOS[i].supaId).eq('quince_key',quinceKey());
+        if(cRes.data){var care={};cRes.data.forEach(function(r){if(r.completado)care[r.tarea+':'+quinceKey()]=true;});AUTOS[i].care=care;}
       }
     }
     saveLocal();
@@ -806,7 +809,19 @@ function mostrarFormAuto(){var f=document.getElementById('add-car-form');f.style
 async function agregarAuto(){
   var marca=document.getElementById('nc-marca').value,modelo=document.getElementById('nc-modelo').value.trim(),anio=document.getElementById('nc-anio').value.trim(),km=parseInt(document.getElementById('nc-km').value),kmmes=parseInt(document.getElementById('nc-kmmes').value);
   if(!marca||!modelo||!anio||isNaN(km)||isNaN(kmmes)){alert('Por favor completa todos los campos');return;}
-  if(AUTOS.length>=100){alert('Límite de 100 vehículos alcanzado');return;}
+  // Verificar límite por plan
+  var plan=U?U.plan||'free':'free';
+  var limites={free:1,individual:1,familiar:3,empresarial:999};
+  var limite=limites[plan]||1;
+  if(AUTOS.length>=limite){
+    if(plan==='free'||plan==='individual'){
+      alert('Tu plan Individual permite 1 vehículo.\n\nActualiza al Plan Familiar ($50/mes) para agregar hasta 3 vehículos.');
+      go('planes');return;
+    } else if(plan==='familiar'){
+      alert('Tu Plan Familiar permite hasta 3 vehículos.\n\nPara flotas más grandes contáctanos para el Plan Empresarial.');
+      return;
+    }
+  }
   var nuevoAuto={marca:marca,modelo:modelo,anio:anio,comb:document.getElementById('nc-comb').value,trans:document.getElementById('nc-trans').value,trac:document.getElementById('nc-trac').value,km:km,kmRef:km,kmFechaRef:new Date().toDateString(),kmmes:kmmes,h:[],care:{},mantOk:true};
   if(U&&U.supaId){
     try{
@@ -828,7 +843,23 @@ var careConfig=[
   {key:function(){return 'agua:'+quinceKey();},icon:'💧',bg:'#EAF3DE',label:'Nivel de agua y aditivo',sub:'Revisa radiador y depósito · Cada 15 días'},
   {key:function(){return 'bateria:'+quinceKey();},icon:'🔋',bg:'#FAEEDA',label:'Revisión visual de batería',sub:'Postes limpios, sin corrosión · Cada 15 días'}
 ];
-function getCare(){var v=VA();return v?(v.care||{}):{};}
+function getCare(){var v=VA();return v?(v.care||{}):{};
+}
+async function saveCareSupabase(tarea,completado){
+  if(!U||!U.supaId||!VA()||!VA().supaId)return;
+  try{
+    if(completado){await supa.from('cuidado').upsert({user_id:U.supaId,auto_id:VA().supaId,quince_key:quinceKey(),tarea:tarea,completado:true},{onConflict:'user_id,auto_id,quince_key,tarea'});}
+    else{await supa.from('cuidado').delete().eq('user_id',U.supaId).eq('auto_id',VA().supaId).eq('quince_key',quinceKey()).eq('tarea',tarea);}
+  }catch(e){console.warn('[Supabase] saveCare error:',e);}
+}
+async function loadCareFromSupabase(){
+  if(!U||!U.supaId||!VA()||!VA().supaId)return;
+  try{
+    var res=await supa.from('cuidado').select('tarea,completado').eq('user_id',U.supaId).eq('auto_id',VA().supaId).eq('quince_key',quinceKey());
+    if(res.data){var care={};res.data.forEach(function(r){if(r.completado)care[r.tarea+':'+quinceKey()]=true;});var v=VA();if(v){v.care=care;saveLocal();}}
+  }catch(e){console.warn('[Supabase] loadCare error:',e);}
+}
+function saveCare(c){var v=VA();if(v){v.care=c;saveLocal();}}
 function saveCare(c){var v=VA();if(v){v.care=c;saveData();}}
 function renderCare(){
   var care=getCare(),container=document.getElementById('care-items');if(!container)return;
@@ -837,7 +868,7 @@ function renderCare(){
     var k=item.key(),done=!!care[k],div=document.createElement('div');
     div.className='care-item';div.style.background=item.bg;
     div.innerHTML='<div class="care-icon" style="background:rgba(255,255,255,.6)">'+item.icon+'</div><div class="care-body"><div class="care-name">'+item.label+'</div><div class="care-sub">'+item.sub+'</div></div><div class="care-check'+(done?' done':'')+'">'+( done?'✓':'')+'</div>';
-    div.onclick=function(){var c=getCare();if(c[k]){delete c[k];saveCare(c);}else{c[k]=true;var v=VA();if(v){v.h=v.h||[];v.h.unshift({fecha:new Date().toLocaleDateString('es-MX'),km:v.km||0,servicio:item.label,auto:v.marca+' '+v.modelo,tipo:'care'});v.care=c;saveData();}}renderCare();};
+    div.onclick=function(){var c=getCare();var wasDone=!!c[k];if(wasDone){delete c[k];saveCare(c);saveCareSupabase(item.label,false);}else{c[k]=true;var v=VA();if(v){v.h=v.h||[];v.h.unshift({fecha:new Date().toLocaleDateString('es-MX'),km:v.km||0,servicio:item.label,auto:v.marca+' '+v.modelo,tipo:'care'});v.care=c;saveLocal();saveCareSupabase(item.label,true);}}renderCare();};
     container.appendChild(div);
   });
 }
@@ -847,17 +878,19 @@ function calcHealth(auto){
   if(!auto)return{motor:0,frenos:0,llantas:0,bateria:0,total:0};
   var km=auto.km||0,anio=parseInt(auto.anio)||2018,hist=auto.h||[];
   function kmU(palabras){for(var i=0;i<hist.length;i++){var s=(hist[i].servicio||'').toLowerCase();for(var j=0;j<palabras.length;j++)if(s.indexOf(palabras[j])>=0)return hist[i].km;}return null;}
-  // MOTOR — FIX: sin historial usa km dentro del intervalo de 5000, mínimo 10%
+  // MOTOR
   var kmM=kmU(['aceite','oil','lubricante']);
   var motorPct=kmM!==null?Math.max(0,Math.min(100,Math.round((1-(km-kmM)/5000)*100))):Math.max(10,Math.min(100,Math.round((1-(km%5000)/5000)*100)));
   // FRENOS
   var kmF=kmU(['freno','brake','líquido de frenos','liquido de frenos']);
   var frenosPct=kmF!==null?Math.max(0,Math.min(100,Math.round((1-(km-kmF)/20000)*100))):Math.max(10,Math.min(100,Math.round((1-(km%20000)/20000)*100)));
-  // LLANTAS
-  var kmL=kmU(['rotaci','llanta','alineaci','balanceo']);
-  var llantasPct=kmL!==null?Math.max(0,Math.min(100,Math.round((1-(km-kmL)/10000)*100))):Math.max(10,Math.min(100,Math.round((1-(km%10000)/10000)*100)));
-  // BATERÍA
-  var bateriaPct=Math.max(10,Math.min(100,Math.round((1-(new Date().getFullYear()-anio)/4)*100)));
+  // LLANTAS — usa km real si el usuario lo registró
+  var kmL=auto.llantasKm||kmU(['rotaci','llanta','alineaci','balanceo']);
+  var llantasPct=kmL!==null?Math.max(0,Math.min(100,Math.round((1-(km-kmL)/50000)*100))):Math.max(10,Math.min(100,Math.round((1-(km%50000)/50000)*100)));
+  // BATERÍA — usa año real si el usuario lo registró
+  var bAnio=auto.bateriaAnio||anio;
+  var bEdad=new Date().getFullYear()-bAnio;
+  var bateriaPct=Math.max(5,Math.min(100,Math.round((1-bEdad/4)*100)));
   var total=Math.round(motorPct*.35+frenosPct*.25+llantasPct*.25+bateriaPct*.15);
   return{motor:motorPct,frenos:frenosPct,llantas:llantasPct,bateria:bateriaPct,total:total};
 }
@@ -981,6 +1014,9 @@ function renderCfg(){
   document.getElementById('c-marca').value=auto.marca||'';document.getElementById('c-modelo').value=auto.modelo||'';document.getElementById('c-anio').value=auto.anio||'';
   document.getElementById('c-comb').value=auto.comb||'gasolina';document.getElementById('c-trans').value=auto.trans||'automatica';document.getElementById('c-trac').value=auto.trac||'fwd';
   document.getElementById('c-km').value=auto.km||'';document.getElementById('c-kmmes').value=auto.kmmes||1300;document.getElementById('c-ciudad').value=U.ciudad||'mexicali';
+  document.getElementById('c-llantas-km').value=auto.llantasKm||'';
+  document.getElementById('c-llantas-anio').value=auto.llantasAnio||'';
+  document.getElementById('c-bateria-anio').value=auto.bateriaAnio||'';
 }
 async function guardarCfg(){
   var auto=VA();if(!auto)return;
@@ -988,7 +1024,17 @@ async function guardarCfg(){
   auto.comb=document.getElementById('c-comb').value;auto.trans=document.getElementById('c-trans').value;auto.trac=document.getElementById('c-trac').value;
   var kmN=parseInt(document.getElementById('c-km').value);if(!isNaN(kmN)&&kmN>100){auto.km=kmN;auto.kmRef=kmN;auto.kmFechaRef=new Date().toDateString();}
   auto.kmmes=parseInt(document.getElementById('c-kmmes').value)||auto.kmmes;U.ciudad=document.getElementById('c-ciudad').value;
-  await saveData();alert('✓ Cambios guardados');go('dashboard');
+  var llKm=parseInt(document.getElementById('c-llantas-km').value);if(!isNaN(llKm)&&llKm>0)auto.llantasKm=llKm;
+  var llAnio=parseInt(document.getElementById('c-llantas-anio').value);if(!isNaN(llAnio)&&llAnio>2000)auto.llantasAnio=llAnio;
+  var batAnio=parseInt(document.getElementById('c-bateria-anio').value);if(!isNaN(batAnio)&&batAnio>2000)auto.bateriaAnio=batAnio;
+  // Guardar en Supabase
+  if(auto.supaId&&U&&U.supaId){
+    try{
+      await supa.from('autos').update({marca:auto.marca,modelo:auto.modelo,anio:auto.anio,comb:auto.comb,trans:auto.trans,trac:auto.trac,km:auto.km,km_ref:auto.kmRef,km_fecha_ref:auto.kmFechaRef,km_mes:auto.kmmes,llantas_km:auto.llantasKm||null,llantas_anio:auto.llantasAnio||null,bateria_anio:auto.bateriaAnio||null}).eq('id',auto.supaId);
+      await supa.from('usuarios').update({ciudad:U.ciudad}).eq('id',U.supaId);
+    }catch(e){console.warn('[Supabase] guardarCfg error:',e);}
+  }
+  saveLocal();alert('✓ Cambios guardados');go('dashboard');
 }
 
 // SWITCHES
@@ -1082,6 +1128,12 @@ async function procesarPago(){
     var data=await res.json();
     if(!data.ok)throw new Error(data.error||'Error al procesar el pago');
 
+    // Guardar plan en Supabase
+    var planNombre=_planSeleccionado.indexOf('familiar')>=0?'familiar':'individual';
+    if(U&&U.supaId){
+      await supa.from('usuarios').update({plan:planNombre,conekta_cliente_id:data.cliente_id,conekta_suscripcion_id:data.suscripcion_id}).eq('id',U.supaId);
+      U.plan=planNombre;saveLocal();
+    }
     cerrarModalPago();
     alert('✅ ¡Suscripción activada!\n\n30 días gratis comenzaron hoy. Te avisaremos antes de tu primer cargo.');
     btn.textContent='Comenzar 30 días gratis →';btn.disabled=false;
